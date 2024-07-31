@@ -1,0 +1,4 @@
+package: ynab
+generate:
+  client: true
+  models: true
