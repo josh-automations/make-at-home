@@ -1,3 +1,19 @@
 package ynab
 
-//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=../../tools/ynab_codegen_config.yaml -o client.go ../../tools/ynab_openapi3.yaml
+import (
+	"context"
+	"net/http"
+)
+
+const DefaultServer string = "https://api.ynab.com/v1"
+
+func bearerTokenSetter(apiToken string) func(ctx context.Context, req *http.Request) error {
+	return func(ctx context.Context, req *http.Request) error {
+		req.Header.Set("Authorization", "Bearer "+apiToken)
+		return nil
+	}
+}
+
+func NewYnabClient(server string, apiToken string) (*ClientWithResponses, error) {
+	return NewClientWithResponses(server, WithRequestEditorFn(bearerTokenSetter(apiToken)))
+}
