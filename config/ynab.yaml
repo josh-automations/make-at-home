@@ -20,15 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-.PHONY: generate
-generate: ynab-generate ;
-
-pkg/ynab/client.go: tools/ynab_codegen_config.yaml tools/ynab_openapi3.yaml pkg/ynab/generate.go
-	go generate pkg/ynab/generate.go
-
-.PHONY: ynab-generate
-ynab-generate: pkg/ynab/client.go ;
-
-.PHONY: add-license
-add-license:
-	go generate tools/generate.go
+ynab_api_token: sample-api-token-ffasdffsdfdsfa
