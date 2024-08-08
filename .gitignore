@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-cmd/ynabutil/ynabutil
+cmd/apiutil/apiutil
 
 # Test binary, built with `go test -c`
 *.test

@@ -22,6 +22,24 @@
 
 package main
 
-func main() {
+import (
+	"fmt"
+	"os"
 
+	"github.com/urfave/cli/v2"
+)
+
+func main() {
+	app := &cli.App{
+		Name:  "apiutil",
+		Usage: "a cli-based api client for multiple apis",
+		Commands: []*cli.Command{
+			ynabCommand,
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println("Error: ", err)
+		os.Exit(1)
+	}
 }
