@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"os"
 
+	ynabcmd "github.com/josh-automations/make-at-home/cmd/apiutil/ynab"
 	"github.com/urfave/cli/v2"
 )
 
@@ -34,7 +35,7 @@ func main() {
 		Name:  "apiutil",
 		Usage: "a cli-based api client for multiple apis",
 		Commands: []*cli.Command{
-			ynabCommand,
+			ynabcmd.NewYnabCmd().GetCommand(),
 		},
 	}
 

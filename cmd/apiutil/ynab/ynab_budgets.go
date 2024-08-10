@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package ynabcmd
 
 import (
 	"context"
@@ -29,56 +29,52 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ynabBudgetsCommand *cli.Command = &cli.Command{
-	Name:  "budgets",
-	Usage: "access budget resource",
-	Subcommands: []*cli.Command{
-		{
-			Name:  "get",
-			Usage: "get budget(s)",
-			Action: func(ctx *cli.Context) error {
-				args := ctx.Args()
-				if args.Len() > 1 {
-					return cli.Exit("too many arguments", 1)
-				}
+func (y *YnabCmd) getBudgetsCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "budgets",
+		Usage: "access budget resource",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "get",
+				Usage: "get budget(s)",
+				Action: func(ctx *cli.Context) error {
+					args := ctx.Args()
+					if args.Len() > 1 {
+						return cli.Exit("too many arguments", 1)
+					}
 
-				args0 := args.First()
-				if args0 == "" || args0 == "all" {
-					return ynabGetBudgets(ctx)
-				} else {
-					return ynabGetBudgetById(ctx, args0)
-				}
-			},
-			Flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name:    "include-accounts",
-					Aliases: []string{"a"},
-					Value:   false,
+					args0 := args.First()
+					if args0 == "" || args0 == "all" {
+						return y.getBudgets(ctx)
+					} else {
+						return y.getBudgetById(ctx, args0)
+					}
 				},
-				&cli.Int64Flag{
-					Name:    "last-server-knowledge",
-					Aliases: []string{"k"},
-					Value:   -1,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "include-accounts",
+						Aliases: []string{"a"},
+						Value:   false,
+					},
+					&cli.Int64Flag{
+						Name:    "last-server-knowledge",
+						Aliases: []string{"k"},
+						Value:   -1,
+					},
 				},
 			},
 		},
-	},
+	}
 }
 
-func ynabGetBudgets(ctx *cli.Context) error {
-	var client *ynab.ClientWithResponses
-	client, err := ynab.NewYnabClient(ynab.DefaultServer, ynabApiToken)
-	if err != nil {
-		return err
-	}
-
+func (y *YnabCmd) getBudgets(ctx *cli.Context) error {
 	params := &ynab.GetBudgetsParams{}
 	if ctx.Bool("include-accounts") {
 		val := true
 		params.IncludeAccounts = &val
 	}
 
-	resp, err := client.GetBudgetsWithResponse(context.TODO(), params)
+	resp, err := y.client.GetBudgetsWithResponse(context.Background(), params)
 	if err != nil {
 		return err
 	}
@@ -95,20 +91,14 @@ func ynabGetBudgets(ctx *cli.Context) error {
 	return nil
 }
 
-func ynabGetBudgetById(ctx *cli.Context, budgetId string) error {
-	var client *ynab.ClientWithResponses
-	client, err := ynab.NewYnabClient(ynab.DefaultServer, ynabApiToken)
-	if err != nil {
-		return err
-	}
-
+func (y *YnabCmd) getBudgetById(ctx *cli.Context, budgetId string) error {
 	params := &ynab.GetBudgetByIdParams{}
 	val := ctx.Int64("last-server-knowledge")
 	if val > 0 {
 		params.LastKnowledgeOfServer = &val
 	}
 
-	resp, err := client.GetBudgetByIdWithResponse(context.TODO(), budgetId, params)
+	resp, err := y.client.GetBudgetByIdWithResponse(context.Background(), budgetId, params)
 	if err != nil {
 		return err
 	}

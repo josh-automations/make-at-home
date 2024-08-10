@@ -20,65 +20,62 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main
+package ynabcmd
 
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/josh-automations/make-at-home/pkg/ynab"
 	"github.com/urfave/cli/v2"
 )
 
-var ynabCategoriesCommand *cli.Command = &cli.Command{
-	Name:  "categories",
-	Usage: "access categories resource",
-	Subcommands: []*cli.Command{
-		{
-			Name:  "get",
-			Usage: "get category/ies",
-			Action: func(ctx *cli.Context) error {
-				args := ctx.Args()
-				if args.Len() > 1 {
-					return cli.Exit("too many arguments", 1)
-				}
+func (y *YnabCmd) getAccountsCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "accounts",
+		Usage: "access accounts resource",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "get",
+				Usage: "get account(s)",
+				Action: func(ctx *cli.Context) error {
+					args := ctx.Args()
+					if args.Len() > 1 {
+						return cli.Exit("too many arguments", 1)
+					}
 
-				args0 := args.First()
-				if args0 == "" || args0 == "all" {
-					return ynabGetCategories(ctx)
-				} else {
-					return ynabGetCategoryById(ctx, args0)
-				}
-			},
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:     "budget",
-					Aliases:  []string{"b"},
-					Required: true,
+					args0 := args.First()
+					if args0 == "" || args0 == "all" {
+						return y.getAccounts(ctx)
+					} else {
+						return y.getAccountById(ctx, args0)
+					}
 				},
-				&cli.Int64Flag{
-					Name:    "last-server-knowledge",
-					Aliases: []string{"k"},
-					Value:   -1,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "budget",
+						Aliases:  []string{"b"},
+						Required: true,
+					},
+					&cli.Int64Flag{
+						Name:    "last-server-knowledge",
+						Aliases: []string{"k"},
+						Value:   -1,
+					},
 				},
 			},
 		},
-	},
+	}
 }
 
-func ynabGetCategories(ctx *cli.Context) error {
-	var client *ynab.ClientWithResponses
-	client, err := ynab.NewYnabClient(ynab.DefaultServer, ynabApiToken)
-	if err != nil {
-		return err
-	}
-
-	params := &ynab.GetCategoriesParams{}
+func (y *YnabCmd) getAccounts(ctx *cli.Context) error {
+	params := &ynab.GetAccountsParams{}
 	val := ctx.Int64("last-server-knowledge")
 	if val > 0 {
 		params.LastKnowledgeOfServer = &val
 	}
 
-	resp, err := client.GetCategoriesWithResponse(context.TODO(), ctx.String("budget"), params)
+	resp, err := y.client.GetAccountsWithResponse(context.Background(), ctx.String("budget"), params)
 	if err != nil {
 		return err
 	}
@@ -93,14 +90,13 @@ func ynabGetCategories(ctx *cli.Context) error {
 	}
 }
 
-func ynabGetCategoryById(ctx *cli.Context, catId string) error {
-	var client *ynab.ClientWithResponses
-	client, err := ynab.NewYnabClient(ynab.DefaultServer, ynabApiToken)
+func (y *YnabCmd) getAccountById(ctx *cli.Context, acctId string) error {
+	acctUuid, err := uuid.Parse(acctId)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.GetCategoryByIdWithResponse(context.TODO(), ctx.String("budget"), catId)
+	resp, err := y.client.GetAccountByIdWithResponse(context.Background(), ctx.String("budget"), acctUuid)
 	if err != nil {
 		return err
 	}
