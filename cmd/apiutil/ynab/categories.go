@@ -44,10 +44,13 @@ func (y *YnabCmd) getCategoriesCommand() *cli.Command {
 					}
 
 					args0 := args.First()
+					budgetId := ctx.String("budget")
+
 					if args0 == "" || args0 == "all" {
-						return y.getCategories(ctx)
+						lastSvrKnowledge := ctx.Int64("last-server-knowledge")
+						return y.getCategories(budgetId, lastSvrKnowledge)
 					} else {
-						return y.getCategoryById(ctx, args0)
+						return y.getCategoryById(budgetId, args0)
 					}
 				},
 				Flags: []cli.Flag{
@@ -67,14 +70,13 @@ func (y *YnabCmd) getCategoriesCommand() *cli.Command {
 	}
 }
 
-func (y *YnabCmd) getCategories(ctx *cli.Context) error {
+func (y *YnabCmd) getCategories(budgetId string, lastSvrKnowledge int64) error {
 	params := &ynab.GetCategoriesParams{}
-	val := ctx.Int64("last-server-knowledge")
-	if val > 0 {
-		params.LastKnowledgeOfServer = &val
+	if lastSvrKnowledge > 0 {
+		params.LastKnowledgeOfServer = &lastSvrKnowledge
 	}
 
-	resp, err := y.client.GetCategoriesWithResponse(context.Background(), ctx.String("budget"), params)
+	resp, err := y.client.GetCategoriesWithResponse(context.Background(), budgetId, params)
 	if err != nil {
 		return err
 	}
@@ -89,8 +91,8 @@ func (y *YnabCmd) getCategories(ctx *cli.Context) error {
 	}
 }
 
-func (y *YnabCmd) getCategoryById(ctx *cli.Context, catId string) error {
-	resp, err := y.client.GetCategoryByIdWithResponse(context.Background(), ctx.String("budget"), catId)
+func (y *YnabCmd) getCategoryById(budgetId string, catId string) error {
+	resp, err := y.client.GetCategoryByIdWithResponse(context.Background(), budgetId, catId)
 	if err != nil {
 		return err
 	}

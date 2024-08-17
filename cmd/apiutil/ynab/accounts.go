@@ -25,18 +25,19 @@ package ynabcmd
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/josh-automations/make-at-home/pkg/ynab"
 	"github.com/urfave/cli/v2"
 )
 
-func (y *YnabCmd) getBudgetsCommand() *cli.Command {
+func (y *YnabCmd) getAccountsCommand() *cli.Command {
 	return &cli.Command{
-		Name:  "budgets",
-		Usage: "access budget resource",
+		Name:  "accounts",
+		Usage: "access accounts resource",
 		Subcommands: []*cli.Command{
 			{
 				Name:  "get",
-				Usage: "get budget(s)",
+				Usage: "get account(s)",
 				Action: func(ctx *cli.Context) error {
 					args := ctx.Args()
 					if args.Len() > 1 {
@@ -44,17 +45,19 @@ func (y *YnabCmd) getBudgetsCommand() *cli.Command {
 					}
 
 					args0 := args.First()
+					budgetId := ctx.String("budget")
 					if args0 == "" || args0 == "all" {
-						return y.getBudgets(ctx)
+						lastSvrKnowledge := ctx.Int64("last-server-knowledge")
+						return y.getAccounts(budgetId, lastSvrKnowledge)
 					} else {
-						return y.getBudgetById(ctx, args0)
+						return y.getAccountById(budgetId, args0)
 					}
 				},
 				Flags: []cli.Flag{
-					&cli.BoolFlag{
-						Name:    "include-accounts",
-						Aliases: []string{"a"},
-						Value:   false,
+					&cli.StringFlag{
+						Name:     "budget",
+						Aliases:  []string{"b"},
+						Required: true,
 					},
 					&cli.Int64Flag{
 						Name:    "last-server-knowledge",
@@ -67,50 +70,44 @@ func (y *YnabCmd) getBudgetsCommand() *cli.Command {
 	}
 }
 
-func (y *YnabCmd) getBudgets(ctx *cli.Context) error {
-	params := &ynab.GetBudgetsParams{}
-	if ctx.Bool("include-accounts") {
-		val := true
-		params.IncludeAccounts = &val
+func (y *YnabCmd) getAccounts(budgetId string, lastSvrKnowledge int64) error {
+	params := &ynab.GetAccountsParams{}
+	if lastSvrKnowledge > 0 {
+		params.LastKnowledgeOfServer = &lastSvrKnowledge
 	}
 
-	resp, err := y.client.GetBudgetsWithResponse(context.Background(), params)
+	resp, err := y.client.GetAccountsWithResponse(context.Background(), budgetId, params)
 	if err != nil {
 		return err
 	}
 
 	switch resp.StatusCode() {
 	case 200:
-		printJson(*resp.JSON200)
+		return printJson(*resp.JSON200)
 	case 404:
-		printJson(*resp.JSON404)
+		return printJson(*resp.JSON404)
 	default:
-		printJson(*resp.JSONDefault)
+		return printJson(*resp.JSONDefault)
 	}
-
-	return nil
 }
 
-func (y *YnabCmd) getBudgetById(ctx *cli.Context, budgetId string) error {
-	params := &ynab.GetBudgetByIdParams{}
-	val := ctx.Int64("last-server-knowledge")
-	if val > 0 {
-		params.LastKnowledgeOfServer = &val
+func (y *YnabCmd) getAccountById(budgetId string, acctId string) error {
+	acctUuid, err := uuid.Parse(acctId)
+	if err != nil {
+		return err
 	}
 
-	resp, err := y.client.GetBudgetByIdWithResponse(context.Background(), budgetId, params)
+	resp, err := y.client.GetAccountByIdWithResponse(context.Background(), budgetId, acctUuid)
 	if err != nil {
 		return err
 	}
 
 	switch resp.StatusCode() {
 	case 200:
-		printJson(*resp.JSON200)
+		return printJson(*resp.JSON200)
 	case 404:
-		printJson(*resp.JSON404)
+		return printJson(*resp.JSON404)
 	default:
-		printJson(*resp.JSONDefault)
+		return printJson(*resp.JSONDefault)
 	}
-
-	return nil
 }

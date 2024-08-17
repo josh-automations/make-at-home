@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"os"
 
+	gmailcmd "github.com/josh-automations/make-at-home/cmd/apiutil/gmail"
 	ynabcmd "github.com/josh-automations/make-at-home/cmd/apiutil/ynab"
 	"github.com/urfave/cli/v2"
 )
@@ -36,6 +37,7 @@ func main() {
 		Usage: "a cli-based api client for multiple apis",
 		Commands: []*cli.Command{
 			ynabcmd.NewYnabCmd().GetCommand(),
+			gmailcmd.NewGmailCmd().GetCommand(),
 		},
 	}
 
