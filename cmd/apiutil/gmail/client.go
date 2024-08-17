@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/josh-automations/make-at-home/internal/oauth2util"
+	"github.com/josh-automations/make-at-home/pkg/oauth2util"
 	"golang.org/x/oauth2"
 )
 

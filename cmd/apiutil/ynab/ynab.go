@@ -23,7 +23,7 @@
 package ynabcmd
 
 import (
-	"github.com/josh-automations/make-at-home/internal/ynab"
+	"github.com/josh-automations/make-at-home/pkg/ynab"
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 )

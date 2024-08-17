@@ -26,7 +26,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/josh-automations/make-at-home/internal/ynab"
+	"github.com/josh-automations/make-at-home/pkg/ynab"
 	"github.com/urfave/cli/v2"
 )
 
