@@ -1,10 +1,8 @@
 package gmailcmd
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"os"
 
 	"golang.org/x/oauth2"
@@ -28,23 +26,4 @@ func printJson(v any) error {
 
 	fmt.Println(string(res))
 	return nil
-}
-
-// Generates a random ascii string using human-readable characters
-// but excludes SPACE
-func getRandomString(len int) (string, error) {
-	var minVal, maxVal int64
-	minVal = 33  //!
-	maxVal = 126 //~
-
-	ret := make([]byte, len)
-	for i := range len {
-		if val, err := rand.Int(rand.Reader, big.NewInt(maxVal-minVal+1)); err != nil {
-			return "", err
-		} else {
-			ret[i] = byte(val.Int64())
-		}
-	}
-
-	return string(ret), nil
 }

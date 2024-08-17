@@ -6,26 +6,21 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/josh-automations/make-at-home/internal/oauth2util"
 	"golang.org/x/oauth2"
 )
 
 func getTokenFromWeb(ctx context.Context, config *oauth2.Config) (*oauth2.Token, error) {
-	verifier, err := getRandomString(16)
-	if err != nil {
-		return nil, err
-	}
-
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline,
-		oauth2.S256ChallengeOption(verifier))
+	authUrl, _ := oauth2util.GetAuthCodeUrl(config)
 	fmt.Printf("Go to the following link in your browser then type the authorization code: \n%v\n",
-		authURL)
+		authUrl)
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
 		return nil, fmt.Errorf("error reading auth code: %w", err)
 	}
 
-	tok, err := config.Exchange(ctx, authCode)
+	tok, err := oauth2util.GetTokenFromAuthCode(ctx, config, authCode, "")
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +29,7 @@ func getTokenFromWeb(ctx context.Context, config *oauth2.Config) (*oauth2.Token,
 
 func (g *GmailCmd) initClient(ctx context.Context, config *oauth2.Config) error {
 	tokenPath := "/etc/gmail/token.json"
-	token, err := getTokenFromFile(tokenPath)
+	token, err := oauth2util.GetTokenFromFile(tokenPath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	} else if err != nil {
@@ -43,7 +38,7 @@ func (g *GmailCmd) initClient(ctx context.Context, config *oauth2.Config) error 
 			return err
 		}
 
-		saveTokenToFile(tokenPath, token)
+		oauth2util.SaveTokenToFile(tokenPath, token)
 	}
 
 	g.client = config.Client(ctx, token)
