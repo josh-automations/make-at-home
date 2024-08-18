@@ -9,22 +9,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Returns a tuple (url, stateChecker)
-//
-//	url - the AuthCode URL.
-//	stateChecker - a function used to verify the state. After user authenticates,
-//	  `stateChecker(state)` returns true if the response state is valid, false otherwise.
+// Returns a tuple of strings (url, state, verifier)
 //
 // Parameters:
 //
 //	config - the oauth2 config
-func GetAuthCodeUrl(config *oauth2.Config) (string, func(string) bool) {
+func GetAuthCodeUrl(config *oauth2.Config) (string, string, string) {
 	state := oauth2.GenerateVerifier()
 	verifier := oauth2.GenerateVerifier()
 
 	authUrl := config.AuthCodeURL(state, oauth2.AccessTypeOffline,
 		oauth2.S256ChallengeOption(verifier))
-	return authUrl, func(respState string) bool { return respState == state }
+	return authUrl, state, verifier
 }
 
 func GetTokenFromAuthCode(ctx context.Context, config *oauth2.Config, authCode string,

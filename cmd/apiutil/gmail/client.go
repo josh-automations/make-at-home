@@ -11,7 +11,7 @@ import (
 )
 
 func getTokenFromWeb(ctx context.Context, config *oauth2.Config) (*oauth2.Token, error) {
-	authUrl, _ := oauth2util.GetAuthCodeUrl(config)
+	authUrl, _, _ := oauth2util.GetAuthCodeUrl(config)
 	fmt.Printf("Go to the following link in your browser then type the authorization code: \n%v\n",
 		authUrl)
 
